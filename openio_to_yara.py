@@ -33,13 +33,18 @@ except ImportError, e:
 
 
 def makeargpaser():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-i", "--input", required=True, help="Input : OpenIOC file for convertion")
-    parser.add_argument("-o", "--output", help="Output : Yara rules file to generate",default=0)
-    parser.add_argument("-m", "--mode", help="mode=1, stick to openioc file \n\tmode=2, 1 ioc for 1 rule",default=1)
-    parser.add_argument("-d", "--debug", help="enable debug",default=0)
-    args = parser.parse_args()
-    return args
+    try:
+
+        parser = argparse.ArgumentParser()
+        parser.add_argument("-i", "--input", required=True, help="Input : OpenIOC file for convertion")
+        parser.add_argument("-o", "--output", help="Output : Yara rules file to generate",default=0)
+        parser.add_argument("-m", "--mode", help="mode=1, stick to openioc file \n\tmode=2, 1 ioc for 1 rule",default='1')
+        parser.add_argument("-d", "--debug", help="enable debug",default=0)
+        args = parser.parse_args()
+        return args
+
+    except argparse.ArgumentError, exc:
+        print exc.message, '\n', exc.argument
 
 
 def debug_print(message):
@@ -84,12 +89,16 @@ debug_print("debug = "+str(debug)+ \
         "\n\t\toutput file = "+str(output_file))
 
 ##TODO : Check/Validate OpenIOC XML file
-if root.tag != "ioc":
-    debug_print("Bad format OpenIOC file ")
+try:
+    if root.tag != "ioc":
+        raise Exception('Bad format OpenIOC file !')
+except Exception as inst:
+    print "[ERROR] : Bad format OpenIOC file !"
+    raise
     exit(1)
 
 #All in one rule
-if  mode == 1:
+if  mode == '1':
     debug_print("Mode All in 1 !")
     ioc_strings = ""
     for ind  in  root.findall("./definition/Indicator"):
@@ -115,7 +124,7 @@ if  mode == 1:
             indice += 1
 
 # 1 rule for 1 IOC
-if mode == 2:
+if mode == '2':
     debug_print("Mode 1 to 1!")
     for ind in  root.findall("./definition/Indicator"):
         #debug_print(ind.attrib)
@@ -154,7 +163,7 @@ if mode == 2:
 
             indice += 1
 
-if mode == 1:
+if mode == '1':
     rule_name = replace_char(openiocfile,"+%-\{\}:\.\\/")
     meta = "\n\tmeta:\n\t\tdescription = \"Yara rule generated from OpenIOC file : "+openiocfile+"\" \
             \n\t\tauthor = \""+ sys.argv[0]+" - MS \" \
