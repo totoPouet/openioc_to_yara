@@ -10,7 +10,7 @@ import sys
 import codecs
 
 # Configuration
-API_KEY = "OefcMxcunkm72Po71vVtX8zUN57vQtAC"
+API_KEY = ""
 output_file=""
 
 def generate_output(filepath,message):
