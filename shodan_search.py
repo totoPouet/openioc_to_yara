@@ -29,25 +29,31 @@ def safe_str(obj):
         # obj is unicode
         return unicode(obj).encode('unicode_escape')
 
-def searchDict(pattern,myobj,output,key=""):
+
+def get_report_conf():
+
+
+def searchDict(pattern,myobj,key=""):
+    global output_file
+
     if type(myobj) == dict:
         for k, v in myobj.iteritems():
             if key=="":
-                searchDict(pattern,v,output,k)
+                searchDict(pattern,v,k)
             else:
-                searchDict(pattern,v,output,key+"."+k)
+                searchDict(pattern,v,key+"."+k)
 
     # TODO : print list properly
     elif type(myobj) == list:
         #print key+" : (list) "+str(myobj)
         if pattern in safe_str(myobj):
-            #print str(key)+" = "+str(myobj)
-            output = output + key+" = "+str(myobj)+"\n"
+            print str(key)+" = "+safe_str(myobj)
+            output_file = output_file + key+" = "+safe_str(myobj)+"\n"
     else:
         #print key+" : (list) "+safe_str(myobj)
         if pattern in safe_str(myobj):
-            #print key+" = "+safe_str(myobj)
-            output = output + key+" = "+safe_str(myobj)+"\n"
+            print key+" = "+safe_str(myobj)
+            output_file = output_file + key+" = "+safe_str(myobj)+"\n"
 
 
 
@@ -63,12 +69,14 @@ try:
     # Perform the search
     query = ' '.join(sys.argv[1:])
     result = api.search(query)
-
+    print "\nquery : "+ query +"\n"
     # Loop through the matches and print each IP
     for service in result['matches']:
-        #print "############################# "+safe_str(service['hostnames'])+" | "+safe_str(service['ip_str'])+" ########################################"
-        output_file = output_file + "############################# "+safe_str(service['hostnames'])+" | "+safe_str(service['ip_str'])+" ########################################"+"\n"
-        searchDict(sys.argv[1],service,output_file)
+        print "############################# "+safe_str(service['hostnames'])+" | " + safe_str(service['ip_str'])+" ########################################"
+        output_file = output_file + "############################# "+ \
+                                safe_str(service['hostnames'])+" | "+safe_str(service['ip_str'])+ \
+                                " ########################################"+"\n"
+        searchDict(sys.argv[1],service)
         #break
 
         '''
@@ -79,12 +87,12 @@ try:
                 safe_str(service['domains']) +"\t" + \
                 safe_str(service['hostnames'])
 
+        print safe_str(output_file)
         '''
 
-    #print safe_str(output_file)
 
 except Exception as e:
     print 'Error: %s' % e
     sys.exit(1)
 
-generate_output("/tmp/toto_0",output_file)
+generate_output("/tmp/toto",output_file)
